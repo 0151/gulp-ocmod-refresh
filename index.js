@@ -2,33 +2,76 @@ const request = require('request').defaults({
     jar: true
 });
 
-let getToken = (config, cb) => {
-    request
-        .post(`${config.url}/admin/index.php?route=common/login`)
-        .form({
-            username: config.username,
-            password: config.password
-        })
-        .on('response', resp => {
-            const location = resp.headers.location;
-            const userToken = location.match(/\b[\w-]+$/)[0];
-            cb(userToken);
-        })
-        .on('error', err => {
-            console.error(err);
-        })
-}
+let ocmodRefresh = (params) => {
 
-let refresh = (config, userToken) => {
-    request
-        .get(`${config.url}/admin/index.php?route=marketplace/modification/refresh&user_token=${userToken}`)
-        .on('error', err => {
-            console.error(err);
+    params = params || {};
+
+    let getToken = () => {
+        return new Promise((resolve, reject) => {
+            request
+                .post({
+                    url: `${params.url}/admin/index.php?route=common/login`,
+                    form: {
+                        username: params.username,
+                        password: params.password
+                    }
+                }, (err, resp) => {
+                    if (err) {
+                        reject('😵');
+                    }
+                    if (resp) {
+                        const location = resp.headers.location;
+                        const token = location.match(/(?<=&)[\w|=]+$/);
+                        params.token = token;
+                        resolve();
+                    }
+                })
         });
-}
+    }
 
-module.exports = (config) => {
-    getToken(config, (userToken) => {
-        refresh(config, userToken);
-    })
-}
+    let getVersion = () => {
+        return new Promise((resolve, reject) => {
+            request
+                .post({
+                    url: `${params.url}/admin/index.php?route=common/dashboard&${params.token}`,
+                }, (err, resp, body) => {
+                    if (err) {
+                        reject('🙁');
+                    }
+                    if (body) {
+                        const version = body.match(/[\d\.]{7}/)[0];
+                        resolve(version);
+                    }
+                });
+        });
+    }
+
+    let refresh = (version) => {
+        
+        let url = `${params.url}/admin/index.php?route=`;
+        
+        if (version > '3') {
+            url+= `marketplace/modification/refresh&${params.token}`;
+        } else if (version > '2.3') {
+            url+= `extension/modification/refresh&${params.token}`;
+        }
+
+        request
+            .post(url)
+            .on('response', () => {
+                console.log('🙂');
+            })
+            .on('error', err => {
+                throwErr('😬');
+            });
+    }
+
+    let throwErr = (err) => {
+        console.error(err);
+    }
+
+    getToken().then(getVersion, throwErr).then(refresh);
+
+} 
+
+module.exports = ocmodRefresh;

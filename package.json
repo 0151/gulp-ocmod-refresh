@@ -1,8 +1,27 @@
 {
-  "name": "ocmod-refresh",
-  "version": "1.0.0",
+  "name": "gulp-ocmod-refresh",
+  "version": "0.1.0",
+  "description": "",
   "main": "index.js",
   "dependencies": {
-    "request": "^2.88.0"
-  }
+    "axios": "^0.19.2",
+    "axios-cookiejar-support": "^0.5.1",
+    "plugin-error": "^1.0.1",
+    "qs": "^6.9.1"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kosrdn/ocmod-refresh.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/kosrdn/ocmod-refresh/issues"
+  },
+  "homepage": "https://github.com/kosrdn/ocmod-refresh#readme"
 }

@@ -1,77 +1,89 @@
-const request = require('request').defaults({
-    jar: true
-});
+const axios = require('axios')
 
-let ocmodRefresh = (params) => {
+const tough = require('tough-cookie')
+const axiosCookieJarSupport = require('axios-cookiejar-support').default
 
-    params = params || {};
+axiosCookieJarSupport(axios)
+const cookieJar = new tough.CookieJar()
 
-    let getToken = () => {
-        return new Promise((resolve, reject) => {
-            request
-                .post({
-                    url: `${params.url}/admin/index.php?route=common/login`,
-                    form: {
-                        username: params.username,
-                        password: params.password
-                    }
-                }, (err, resp) => {
-                    if (err) {
-                        reject('😵');
-                    }
-                    if (resp) {
-                        const location = resp.headers.location;
-                        const token = location.match(/(?<=&)[\w|=]+$/);
-                        params.token = token;
-                        resolve();
-                    }
-                })
-        });
+const transport = axios.create({
+    baseURL: 'http://localhost/admin/',
+    withCredentials: true,
+    jar: cookieJar,
+    maxRedirects: 0,
+    validateStatus: status => status == 302,
+})
+
+const qs = require('qs')
+const PluginError = require('plugin-error')
+
+const PLUGIN_NAME = 'gulp-ocmod-refresh'
+
+/**
+ * 
+ */
+const getUserToken = async () => {
+    const params = { 
+        route: 'common/login',
+        username: 'admin',
+        password: 'admin',
     }
 
-    let getVersion = () => {
-        return new Promise((resolve, reject) => {
-            request
-                .post({
-                    url: `${params.url}/admin/index.php?route=common/dashboard&${params.token}`,
-                }, (err, resp, body) => {
-                    if (err) {
-                        reject('🙁');
-                    }
-                    if (body) {
-                        const version = body.match(/[\d\.]{7}/)[0];
-                        resolve(version);
-                    }
-                });
-        });
-    }
+    return new Promise((resolve, reject) => {
+        transport.post('index.php', qs.stringify(params))
+            .then(
+                response => {
+                    const location = response.headers.location
+                    const queryString = location.split('?')[1]
+                    const userToken = qs.parse(queryString).user_token
 
-    let refresh = (version) => {
-        
-        let url = `${params.url}/admin/index.php?route=`;
-        
-        if (version > '3') {
-            url+= `marketplace/modification/refresh&${params.token}`;
-        } else if (version > '2.3') {
-            url+= `extension/modification/refresh&${params.token}`;
+                    resolve(userToken)
+                },
+                () => {
+                    reject('Login or password incorrect')
+                }
+            )
+    })
+}
+
+/**
+ * 
+ * @param {*} userToken 
+ */
+const refreshCache = userToken => {
+    const request = {
+        params: {
+            route: 'marketplace/modification/refresh',
+            user_token: userToken,
         }
-
-        request
-            .post(url)
-            .on('response', () => {
-                console.log('🙂');
-            })
-            .on('error', err => {
-                throwErr('😬');
-            });
     }
 
-    let throwErr = (err) => {
-        console.error(err);
+    return transport.get('index.php', request)
+}
+
+/**
+ * 
+ */
+const logout = () => {
+    const request = {
+        params: {
+            route: 'common/logout'
+        }
     }
 
-    getToken().then(getVersion, throwErr).then(refresh);
+    return transport.get('index.php', request)
+}
 
-} 
+/**
+ * 
+ */
+const ocmodRefresh = async () => {
+    getUserToken()
+        .then(refreshCache)
+        .then(logout)
+        .catch(error => {
+            throw new PluginError(PLUGIN_NAME, error)
+        })
+}
 
-module.exports = ocmodRefresh;
+module.exports = ocmodRefresh

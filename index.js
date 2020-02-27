@@ -23,7 +23,7 @@ module.exports = options => {
     }
 
     const transport = axios.create({
-        baseURL: 'http://localhost/admin/',
+        baseURL: `${options.url}/admin/`,
         withCredentials: true,
         jar: new tough.CookieJar(),
         maxRedirects: 0,
@@ -88,6 +88,9 @@ module.exports = options => {
     getUserToken()
         .then(refreshCache)
         .then(logout)
+        .then(() => {
+            console.log('OCMOD cache updated')
+        })
         .catch(error => {
             console.error(error)
         })

@@ -1,8 +1,11 @@
+# Gulp plugin for updating OCMOD cache (OpenCart 3.x)
+## Using
 ```javascript
-ocmodRefresh = require('./index.js');
+const ocmodRefresh = require('gulp-ocmod-refresh')
+
 ocmodRefresh({
-    url: '',
-    username: '',
-    password: ''
-});
+    url: 'localhost',
+    username: 'admin',
+    password: 'secret',
+})
 ```

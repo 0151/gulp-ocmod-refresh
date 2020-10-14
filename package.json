@@ -1,27 +1,33 @@
 {
   "name": "gulp-ocmod-refresh",
   "version": "0.1.0",
-  "description": "",
-  "main": "index.js",
+  "description": "Gulp plugin for updating OCMOD cache",
+  "main": "dist/index.js",
   "dependencies": {
-    "axios": "^0.19.2",
-    "axios-cookiejar-support": "^0.5.1",
+    "axios": "^0.19.0",
+    "axios-cookiejar-support": "^1.0.0",
+    "form-data": "^3.0.0",
     "plugin-error": "^1.0.1",
-    "qs": "^6.9.1"
+    "qs": "^6.9.4"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "@types/qs": "^6.9.5",
+    "typescript": "^4.0.3"
+  },
   "scripts": {
+    "build": "tsc",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/kosrdn/ocmod-refresh.git"
   },
-  "keywords": [],
-  "author": "",
+  "keywords": [
+    "gulpplugin"
+  ],
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/kosrdn/gulp-ocmod-refresh/issues"
+    "url": "https://github.com/0151/gulp-ocmod-refresh/issues"
   },
-  "homepage": "https://github.com/kosrdn/gulp-ocmod-refresh#readme"
+  "homepage": "https://github.com/0151/gulp-ocmod-refresh#readme"
 }
